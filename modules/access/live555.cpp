@@ -60,6 +60,7 @@
 #include <liveMedia.hh>
 #include <liveMedia_version.hh>
 #include <Base64.hh>
+#include <NetAddress.hh>
 
 extern "C" {
 #include "../access/mms/asf.h"  /* Who said ugly ? */
@@ -737,7 +738,8 @@ static int SessionsSetup( demux_t *p_demux )
     unsigned const thresh = 200000; /* RTP reorder threshold .2 second (default .1) */
     const char     *p_sess_lang = NULL;
     const char     *p_lang;
-
+    struct sockaddr_storage addr;
+    
     b_rtsp_tcp    = var_CreateGetBool( p_demux, "rtsp-tcp" ) ||
                     var_GetBool( p_demux, "rtsp-http" );
     i_client_port = var_InheritInteger( p_demux, "rtp-client-port" );
@@ -860,7 +862,8 @@ static int SessionsSetup( demux_t *p_demux )
             if( !p_sys->b_multicast )
             {
                 /* We need different rollover behaviour for multicast */
-                p_sys->b_multicast = IsMulticastAddress( sub->connectionEndpointAddress() );
+                sub->getConnectionEndpointAddress(addr);
+                p_sys->b_multicast = IsMulticastAddress( addr );
             }
 
             tk = (live_track_t*)malloc( sizeof( live_track_t ) );
